@@ -12,7 +12,8 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
+      padding: 20px 0;
     }
     .card {
       width: 90%;
@@ -35,8 +36,7 @@
       text-align: center;
       margin-bottom: 24px;
     }
-    /* Contenedor circular para la imagen - aumentado de tamaño */
-    .profile .img-container {
+    .img-container {
       width: 120px;
       height: 120px;
       margin: 0 auto;
@@ -50,14 +50,7 @@
       align-items: center;
       position: relative;
     }
-    .profile img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: none; /* Inicialmente oculto, se muestra con JS */
-    }
-    /* Efecto de borde decorativo */
-    .profile .img-container::before {
+    .img-container::before {
       content: '';
       position: absolute;
       top: -4px;
@@ -68,29 +61,10 @@
       background: linear-gradient(45deg, transparent, rgba(106, 17, 203, 0.1), rgba(37, 117, 252, 0.2));
       z-index: -1;
     }
-    /* Imagen de perfil de respaldo con estilo mejorado */
-    .profile .no-img {
-      display: flex; /* Inicialmente visible, se oculta con JS si hay imagen */
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #e8e8e8, #f8f8f8);
-      justify-content: center;
-      align-items: center;
-      font-size: 50px;
-      color: #a0a0a0;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-    }
-    /* Mensaje de depuración */
-    .debug-info {
-      display: none; /* Oculto por defecto */
-      margin-top: 10px;
-      padding: 8px;
-      background-color: #fff8e1;
-      border: 1px solid #ffe082;
-      border-radius: 4px;
-      font-size: 12px;
-      color: #5d4037;
-      text-align: left;
+    .default-avatar {
+      width: 60%;
+      height: 60%;
+      fill: #2575fc;
     }
     .info-list {
       margin-top: 16px;
@@ -141,12 +115,6 @@
     .contacts-list div:last-child {
       border-bottom: none;
     }
-    /* Avatar personalizado */
-    .default-avatar {
-      width: 60%;
-      height: 60%;
-      fill: #2575fc;
-    }
   </style>
 </head>
 <body>
@@ -154,183 +122,125 @@
     <div class="card-header"></div>
     <div class="card-body">
       <div class="profile">
-        <div class="img-container">
-          <img id="userImage" alt="Foto Usuario">
-          <div class="no-img" id="noImage">
-            <!-- SVG de perfil personalizado -->
-            <svg class="default-avatar" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-            </svg>
-          </div>
+        <div class="img-container" id="profileImage">
+          <!-- Avatar por defecto -->
+          <svg class="default-avatar" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+          </svg>
         </div>
-        <!-- Información de depuración oculta -->
-        <div id="debugInfo" class="debug-info"></div>
       </div>
       <div class="info-list">
-        <div><span class="label">Nombre:</span><span id="name" class="value">Cargando...</span></div>
-        <div><span class="label">Nacimiento:</span><span id="birthDate" class="value">Cargando...</span></div>
-        <div><span class="label">Grupo Sanguíneo:</span><span id="bloodType" class="value">Cargando...</span></div>
-        <div><span class="label">Alergias:</span><span id="allergies" class="value">Cargando...</span></div>
+        <div><span class="label">Nombre:</span><span id="name" class="value">--</span></div>
+        <div><span class="label">Nacimiento:</span><span id="birthDate" class="value">--</span></div>
+        <div><span class="label">Grupo Sanguíneo:</span><span id="bloodType" class="value">--</span></div>
+        <div><span class="label">Alergias:</span><span id="allergies" class="value">--</span></div>
       </div>
       <div class="contacts">
         <div class="contacts-title">Contactos Familiares</div>
         <div class="contacts-list" id="contactsList">
-          <div><span>Cargando contactos...</span></div>
+          <div>No hay contactos registrados</div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // Panel de depuración oculto por defecto
-    // (Se puede activar con doble clic en cualquier parte de la página)
-    document.addEventListener('dblclick', function() {
-      const debugEl = document.getElementById('debugInfo');
-      debugEl.style.display = debugEl.style.display === 'none' || debugEl.style.display === '' ? 'block' : 'none';
-    });
-
-    function getQueryParam(name) {
+    // Extrae parámetros de URL
+    function getParam(name) {
       const url = new URL(window.location.href);
       return url.searchParams.get(name);
     }
 
-    // Función para actualizar datos básicos inmediatamente
-    function updateBasicInfo(data) {
-      document.getElementById('name').textContent = data.name || 'No registrado';
-      document.getElementById('birthDate').textContent = data.birthDate || 'No especificado';
-      document.getElementById('bloodType').textContent = data.bloodType || 'No especificado';
-      document.getElementById('allergies').textContent = data.allergies || 'Ninguna';
+    // Función principal
+    (function() {
+      // Mostrar siempre el avatar predeterminado primero
+      const profileImage = document.getElementById('profileImage');
       
-      // Actualizar contactos
-      const contactsContainer = document.getElementById('contactsList');
-      contactsContainer.innerHTML = ''; // Limpiar contenido actual
+      // Obtener datos
+      const dataParam = getParam('data');
+      const nameParam = getParam('name');
       
-      if (Array.isArray(data.contacts) && data.contacts.length > 0) {
-        data.contacts.forEach(c => {
-          if (c && c.name && c.phone) {
-            const div = document.createElement('div');
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = c.name;
-            
-            const phoneSpan = document.createElement('span');
-            phoneSpan.textContent = c.phone;
-            
-            div.appendChild(nameSpan);
-            div.appendChild(phoneSpan);
-            contactsContainer.appendChild(div);
-          }
-        });
-      } else {
-        const div = document.createElement('div');
-        div.textContent = 'No hay contactos registrados';
-        contactsContainer.appendChild(div);
-      }
-    }
-
-    // Función para crear elemento de imagen desde base64 (con tiempo límite)
-    function createImageElement(base64String) {
-      // Crear elemento de imagen manual
-      const imgEl = document.getElementById('userImage');
-      const noImgEl = document.getElementById('noImage');
-      const debugEl = document.getElementById('debugInfo');
-      
-      // Establecer un tiempo límite para carga de imagen (3 segundos)
-      const imageTimeout = setTimeout(function() {
-        debugEl.innerHTML += 'Tiempo de espera agotado para la imagen<br>';
-        imgEl.style.display = 'none';
-        noImgEl.style.display = 'flex';
-      }, 3000);
-      
-      try {
-        // Determinar el tipo de imagen basado en los primeros caracteres
-        let imageType = 'jpeg'; // Por defecto
-        if (base64String.startsWith('/9j/')) {
-          imageType = 'jpeg';
-        } else if (base64String.startsWith('iVBOR')) {
-          imageType = 'png';
-        }
-        
-        // Construir el src de la imagen
-        imgEl.src = `data:image/${imageType};base64,${base64String}`;
-        
-        // Mostrar la imagen y ocultar el avatar
-        imgEl.style.display = 'block';
-        noImgEl.style.display = 'none';
-        
-        // Añadir manejo de errores
-        imgEl.onerror = function() {
-          clearTimeout(imageTimeout);
-          
-          // Intentar con el formato alternativo
-          const altFormat = imageType === 'jpeg' ? 'png' : 'jpeg';
-          imgEl.src = `data:image/${altFormat};base64,${base64String}`;
-          
-          // Si sigue fallando, usar imagen de prueba
-          imgEl.onerror = function() {
-            // Mostrar avatar predeterminado
-            imgEl.style.display = 'none';
-            noImgEl.style.display = 'flex';
-          };
-        };
-        
-        // Confirmar carga exitosa
-        imgEl.onload = function() {
-          clearTimeout(imageTimeout);
-        };
-        
-      } catch (e) {
-        clearTimeout(imageTimeout);
-        imgEl.style.display = 'none';
-        noImgEl.style.display = 'flex';
-      }
-    }
-
-    function init() {
-      // Iniciar temporizador global para evitar carga infinita
-      const globalTimeout = setTimeout(function() {
-        const values = document.querySelectorAll('.value');
-        for (let i = 0; i < values.length; i++) {
-          if (values[i].textContent === 'Cargando...') {
-            values[i].textContent = 'Error de carga';
-          }
-        }
-        
-        const contactsList = document.getElementById('contactsList');
-        if (contactsList.textContent.includes('Cargando')) {
-          contactsList.innerHTML = '<div>Error de carga</div>';
-        }
-      }, 5000);
-      
-      const dataParam = getQueryParam('data');
-      const nameParam = getQueryParam('name');
-      
-      // Si no hay parámetro data pero hay name, mostrar información básica
+      // Caso más simple: solo hay nombre en URL
       if (!dataParam && nameParam) {
         document.getElementById('name').textContent = nameParam;
-        document.getElementById('birthDate').textContent = 'No disponible';
-        document.getElementById('bloodType').textContent = 'No disponible';
-        document.getElementById('allergies').textContent = 'No disponible';
-        document.getElementById('contactsList').innerHTML = '<div>Información no disponible</div>';
-        clearTimeout(globalTimeout);
         return;
       }
       
+      // Sin datos
       if (!dataParam) {
         document.getElementById('name').textContent = 'Sin datos';
-        document.getElementById('birthDate').textContent = 'Sin datos';
-        document.getElementById('bloodType').textContent = 'Sin datos';
-        document.getElementById('allergies').textContent = 'Sin datos';
-        document.getElementById('contactsList').innerHTML = '<div>Sin datos de contactos</div>';
-        clearTimeout(globalTimeout);
         return;
       }
       
       try {
+        // Decodificar y parsear datos
         const jsonData = decodeURIComponent(dataParam);
         const data = JSON.parse(jsonData);
         
-        // Actualizar información básica inmediatamente
-        updateBasicInfo(data);
-        clearTimeout(globalTimeout);
+        // Actualizar información básica
+        document.getElementById('name').textContent = data.name || 'No registrado';
+        document.getElementById('birthDate').textContent = data.birthDate || 'No especificado';
+        document.getElementById('bloodType').textContent = data.bloodType || 'No especificado';
+        document.getElementById('allergies').textContent = data.allergies || 'Ninguna';
         
+        // Actualizar contactos
+        if (Array.isArray(data.contacts) && data.contacts.length > 0) {
+          const contactsHTML = data.contacts.map(c => {
+            if (c && c.name && c.phone) {
+              return `<div><span>${c.name}</span><span>${c.phone}</span></div>`;
+            }
+            return '';
+          }).join('');
+          
+          if (contactsHTML) {
+            document.getElementById('contactsList').innerHTML = contactsHTML;
+          }
+        }
+        
+        // Intentar cargar imagen si existe
+        if (data.userImage && data.userImage.length > 0) {
+          try {
+            // Crear imagen
+            const img = new Image();
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            
+            // Determinar formato
+            let format = 'jpeg';
+            if (data.userImage.startsWith('iVBOR')) {
+              format = 'png';
+            }
+            
+            // Configurar fuente
+            img.src = `data:image/${format};base64,${data.userImage}`;
+            
+            // Manejar error
+            img.onerror = function() {
+              // Si falla con el primer formato, intentar con el otro
+              format = (format === 'jpeg') ? 'png' : 'jpeg';
+              img.src = `data:image/${format};base64,${data.userImage}`;
+              
+              // Si falla de nuevo, no hacer nada (ya está el avatar por defecto)
+              img.onerror = null;
+            };
+            
+            // Si la imagen carga correctamente, reemplazar el avatar
+            img.onload = function() {
+              // Limpiar contenido actual
+              profileImage.innerHTML = '';
+              // Agregar la imagen
+              profileImage.appendChild(img);
+            };
+          } catch (e) {
+            console.error('Error al procesar imagen:', e);
+          }
+        }
+      } catch (e) {
+        console.error('Error al parsear datos:', e);
+        document.getElementById('name').textContent = 'Error en datos';
+      }
+    })();
+  </script>
+</body>
+</html> 
