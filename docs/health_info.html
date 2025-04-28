@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Información de Salud</n></title>
+  <title>Información de Salud</title>
   <style>
     body {
       margin: 0;
@@ -15,39 +15,91 @@
       height: 100vh;
     }
     .card {
-      width: 360px;
+      width: 90%;
+      max-width: 360px;
       background: white;
       border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     }
     .card-header {
       background: linear-gradient(90deg, #6a11cb, #2575fc);
       height: 60px;
     }
     .card-body {
-      padding: 20px;
+      padding: 24px;
     }
     .profile {
       position: relative;
       margin-top: -40px;
       text-align: center;
+      margin-bottom: 24px;
+    }
+    /* Contenedor circular para la imagen - aumentado de tamaño */
+    .profile .img-container {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto;
+      border-radius: 50%;
+      border: 5px solid white;
+      overflow: hidden;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      background: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
     }
     .profile img {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      border: 4px solid white;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      background: #e0e0e0;
+      display: none; /* Inicialmente oculto, se muestra con JS */
+    }
+    /* Efecto de borde decorativo */
+    .profile .img-container::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, transparent, rgba(106, 17, 203, 0.1), rgba(37, 117, 252, 0.2));
+      z-index: -1;
+    }
+    /* Imagen de perfil de respaldo con estilo mejorado */
+    .profile .no-img {
+      display: flex; /* Inicialmente visible, se oculta con JS si hay imagen */
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #e8e8e8, #f8f8f8);
+      justify-content: center;
+      align-items: center;
+      font-size: 50px;
+      color: #a0a0a0;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    /* Mensaje de depuración */
+    .debug-info {
+      display: none; /* Oculto por defecto */
+      margin-top: 10px;
+      padding: 8px;
+      background-color: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #5d4037;
+      text-align: left;
     }
     .info-list {
-      margin-top: 10px;
+      margin-top: 16px;
+      padding: 0 8px;
     }
     .info-list div {
       display: flex;
       justify-content: space-between;
-      padding: 6px 0;
+      padding: 8px 0;
       border-bottom: 1px solid #eee;
     }
     .info-list div:last-child {
@@ -61,24 +113,30 @@
       font-weight: bold;
       color: #333;
       font-size: 14px;
+      max-width: 60%;
+      text-align: right;
+      word-break: break-word;
     }
     .contacts {
-      margin-top: 20px;
+      margin-top: 24px;
+      padding: 8px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
     }
     .contacts-title {
       font-size: 16px;
       font-weight: bold;
       color: #333;
       border-bottom: 1px solid #eee;
-      padding-bottom: 6px;
-      margin-bottom: 10px;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
     }
     .contacts-list div {
       display: flex;
       justify-content: space-between;
-      padding: 4px 0;
+      padding: 6px 0;
       font-size: 14px;
-      border-bottom: 1px dashed #ccc;
+      border-bottom: 1px dashed #ddd;
     }
     .contacts-list div:last-child {
       border-bottom: none;
@@ -90,22 +148,35 @@
     <div class="card-header"></div>
     <div class="card-body">
       <div class="profile">
-        <img id="userImage" src="" alt="Foto Usuario">
+        <div class="img-container">
+          <img id="userImage" alt="Foto Usuario">
+          <div class="no-img" id="noImage">👤</div>
+        </div>
+        <!-- Información de depuración -->
+        <div id="debugInfo" class="debug-info"></div>
       </div>
       <div class="info-list">
-        <div><span class="label">Nombre:</span><span id="name" class="value"></span></div>
-        <div><span class="label">Nacimiento:</span><span id="birthDate" class="value"></span></div>
-        <div><span class="label">Grupo Sanguíneo:</span><span id="bloodType" class="value"></span></div>
-        <div><span class="label">Alergias:</span><span id="allergies" class="value"></span></div>
+        <div><span class="label">Nombre:</span><span id="name" class="value">Cargando...</span></div>
+        <div><span class="label">Nacimiento:</span><span id="birthDate" class="value">Cargando...</span></div>
+        <div><span class="label">Grupo Sanguíneo:</span><span id="bloodType" class="value">Cargando...</span></div>
+        <div><span class="label">Alergias:</span><span id="allergies" class="value">Cargando...</span></div>
       </div>
       <div class="contacts">
         <div class="contacts-title">Contactos Familiares</div>
-        <div class="contacts-list" id="contactsList"></div>
+        <div class="contacts-list" id="contactsList">
+          <div><span>Cargando contactos...</span></div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
+    // Activar depuración con doble tap en cualquier parte
+    document.addEventListener('dblclick', function() {
+      const debugEl = document.getElementById('debugInfo');
+      debugEl.style.display = debugEl.style.display === 'none' || debugEl.style.display === '' ? 'block' : 'none';
+    });
+
     function getQueryParam(name) {
       const url = new URL(window.location.href);
       return url.searchParams.get(name);
@@ -113,42 +184,116 @@
 
     function init() {
       const dataParam = getQueryParam('data');
-      if (!dataParam) return;
+      if (!dataParam) {
+        document.getElementById('name').textContent = 'Sin datos';
+        document.getElementById('birthDate').textContent = 'Sin datos';
+        document.getElementById('bloodType').textContent = 'Sin datos';
+        document.getElementById('allergies').textContent = 'Sin datos';
+        document.getElementById('contactsList').textContent = 'Sin datos de contactos';
+        return;
+      }
+      
       try {
         const data = JSON.parse(decodeURIComponent(dataParam));
-        // Imagen
+        
+        // Manejar la imagen con mejor soporte para diferentes formatos
         const imgEl = document.getElementById('userImage');
-        if (data.userImage) {
-          imgEl.src = 'data:image/png;base64,' + data.userImage;
+        const noImgEl = document.getElementById('noImage');
+        const debugEl = document.getElementById('debugInfo');
+        
+        // Información de depuración
+        debugEl.innerHTML = 'Procesando datos...<br>';
+        
+        if (data.userImage && data.userImage.length > 0) {
+          // Asegurarse de que la imagen esté visible
+          imgEl.style.display = 'block';
+          noImgEl.style.display = 'none';
+          
+          // Información para depuración
+          debugEl.innerHTML += `Imagen encontrada: ${data.userImage.length} caracteres<br>`;
+          debugEl.innerHTML += `Primeros caracteres: ${data.userImage.substring(0, 20)}...<br>`;
+          
+          // Intentar cargar la imagen como JPEG primero
+          imgEl.src = 'data:image/jpeg;base64,' + data.userImage;
+          debugEl.innerHTML += 'Intentando como JPEG...<br>';
+          
+          imgEl.onerror = function() {
+            debugEl.innerHTML += 'Error con JPEG, intentando PNG...<br>';
+            // Si falla, probar como PNG
+            imgEl.src = 'data:image/png;base64,' + data.userImage;
+            
+            // Si sigue fallando, intentar sin especificar formato
+            imgEl.onerror = function() {
+              debugEl.innerHTML += 'Error con PNG, intentando formato genérico...<br>';
+              imgEl.src = 'data:image;base64,' + data.userImage;
+              
+              // Último intento: mostrar avatar por defecto
+              imgEl.onerror = function() {
+                debugEl.innerHTML += 'Error con todos los formatos. Mostrando avatar.<br>';
+                imgEl.style.display = 'none';
+                noImgEl.style.display = 'flex';
+              };
+            };
+          };
+          
+          imgEl.onload = function() {
+            debugEl.innerHTML += '¡Imagen cargada con éxito!<br>';
+          };
         } else {
-          imgEl.src = 'https://via.placeholder.com/80';
+          // Mostrar avatar por defecto si no hay imagen
+          imgEl.style.display = 'none';
+          noImgEl.style.display = 'flex';
+          debugEl.innerHTML += 'No se encontró imagen en los datos<br>';
         }
-        // Campos
+        
+        // Registrar en consola para debugging
+        console.log('Estado de imagen:', {
+          tieneImagen: !!data.userImage,
+          longitudBase64: data.userImage ? data.userImage.length : 0,
+          primeros10Chars: data.userImage ? data.userImage.substring(0, 10) : 'N/A'
+        });
+        
+        // Actualizar información personal
         document.getElementById('name').textContent = data.name || 'No registrado';
         document.getElementById('birthDate').textContent = data.birthDate || 'No especificado';
         document.getElementById('bloodType').textContent = data.bloodType || 'No especificado';
         document.getElementById('allergies').textContent = data.allergies || 'Ninguna';
-        // Contactos
+        
+        // Actualizar contactos
         const contactsContainer = document.getElementById('contactsList');
+        contactsContainer.innerHTML = ''; // Limpiar contenido actual
+        
         if (Array.isArray(data.contacts) && data.contacts.length > 0) {
           data.contacts.forEach(c => {
-            const div = document.createElement('div');
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = c.name;
-            const phoneSpan = document.createElement('span');
-            phoneSpan.textContent = c.phone;
-            div.appendChild(nameSpan);
-            div.appendChild(phoneSpan);
-            contactsContainer.appendChild(div);
+            if (c && c.name && c.phone) {
+              const div = document.createElement('div');
+              
+              const nameSpan = document.createElement('span');
+              nameSpan.textContent = c.name;
+              
+              const phoneSpan = document.createElement('span');
+              phoneSpan.textContent = c.phone;
+              
+              div.appendChild(nameSpan);
+              div.appendChild(phoneSpan);
+              contactsContainer.appendChild(div);
+            }
           });
         } else {
-          contactsContainer.textContent = 'No hay contactos familiares';
+          const div = document.createElement('div');
+          div.textContent = 'No hay contactos registrados';
+          contactsContainer.appendChild(div);
         }
       } catch (e) {
         console.error('Error al parsear datos:', e);
+        document.getElementById('name').textContent = 'Error en datos';
+        document.getElementById('contactsList').textContent = 'Error al procesar contactos';
+        document.getElementById('debugInfo').innerHTML = 'Error: ' + e.message;
+        document.getElementById('debugInfo').style.display = 'block';
       }
     }
+    
     window.onload = init;
   </script>
 </body>
-</html>
+</html> 
