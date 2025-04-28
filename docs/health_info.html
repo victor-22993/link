@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Información de Salud</n></title>
+  <title>Información de Salud</title>
   <style>
     body {
       margin: 0;
@@ -17,71 +17,108 @@
     .card {
       width: 360px;
       background: white;
-      border-radius: 10px;
+      border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     }
     .card-header {
-      background: linear-gradient(90deg, #6a11cb, #2575fc);
-      height: 60px;
+      background: linear-gradient(90deg, #5f27cd, #4a76fd);
+      height: 100px;
     }
     .card-body {
-      padding: 20px;
+      padding: 0 20px 20px;
+      position: relative;
     }
     .profile {
       position: relative;
-      margin-top: -40px;
+      margin-top: -50px;
       text-align: center;
     }
-    .profile img {
-      width: 80px;
-      height: 80px;
+    .avatar-container {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto;
       border-radius: 50%;
-      border: 4px solid white;
-      object-fit: cover;
-      background: #e0e0e0;
+      background-color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 5px solid white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .avatar-icon {
+      width: 60px;
+      height: 60px;
+      background-color: #4a76fd;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+    .avatar-icon::before {
+      content: '';
+      width: 25px;
+      height: 25px;
+      background-color: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 28px;
+    }
+    .avatar-icon::after {
+      content: '';
+      width: 35px;
+      height: 15px;
+      background-color: white;
+      border-radius: 20px 20px 0 0;
+      position: absolute;
+      top: 56px;
     }
     .info-list {
-      margin-top: 10px;
+      margin-top: 30px;
     }
-    .info-list div {
+    .info-item {
       display: flex;
       justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px solid #eee;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0;
     }
-    .info-list div:last-child {
-      border-bottom: none;
-    }
-    .info-list .label {
+    .label {
       color: #555;
-      font-size: 14px;
+      font-size: 16px;
     }
-    .info-list .value {
-      font-weight: bold;
+    .value {
       color: #333;
-      font-size: 14px;
+      font-size: 16px;
+      font-weight: 500;
     }
-    .contacts {
+    .loading {
+      background-color: #f0f0f0;
+      color: transparent;
+      border-radius: 4px;
+      animation: loading 1.5s infinite;
+      min-width: 100px;
+    }
+    .contacts-section {
       margin-top: 20px;
+      background-color: #f9f9f9;
+      border-radius: 12px;
+      padding: 15px;
     }
     .contacts-title {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       color: #333;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 6px;
       margin-bottom: 10px;
     }
-    .contacts-list div {
-      display: flex;
-      justify-content: space-between;
-      padding: 4px 0;
-      font-size: 14px;
-      border-bottom: 1px dashed #ccc;
+    .contacts-loading {
+      color: #777;
+      font-size: 15px;
     }
-    .contacts-list div:last-child {
-      border-bottom: none;
+    @keyframes loading {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
     }
   </style>
 </head>
@@ -90,17 +127,33 @@
     <div class="card-header"></div>
     <div class="card-body">
       <div class="profile">
-        <img id="userImage" src="" alt="Foto Usuario">
+        <div class="avatar-container">
+          <div class="avatar-icon"></div>
+        </div>
       </div>
+      
       <div class="info-list">
-        <div><span class="label">Nombre:</span><span id="name" class="value"></span></div>
-        <div><span class="label">Nacimiento:</span><span id="birthDate" class="value"></span></div>
-        <div><span class="label">Grupo Sanguíneo:</span><span id="bloodType" class="value"></span></div>
-        <div><span class="label">Alergias:</span><span id="allergies" class="value"></span></div>
+        <div class="info-item">
+          <span class="label">Nombre:</span>
+          <span class="value"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Nacimiento:</span>
+          <span class="value"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Grupo Sanguíneo:</span>
+          <span class="value"></span>
+        </div>
+        <div class="info-item">
+          <span class="label">Alergias:</span>
+          <span class="value"></span>
+        </div>
       </div>
-      <div class="contacts">
+      
+      <div class="contacts-section">
         <div class="contacts-title">Contactos Familiares</div>
-        <div class="contacts-list" id="contactsList"></div>
+        <div class="contacts-list">No hay contactos familiares</div>
       </div>
     </div>
   </div>
@@ -116,33 +169,38 @@
       if (!dataParam) return;
       try {
         const data = JSON.parse(decodeURIComponent(dataParam));
-        // Imagen
-        const imgEl = document.getElementById('userImage');
-        if (data.userImage) {
-          imgEl.src = 'data:image/png;base64,' + data.userImage;
-        } else {
-          imgEl.src = 'https://via.placeholder.com/80';
-        }
         // Campos
-        document.getElementById('name').textContent = data.name || 'No registrado';
-        document.getElementById('birthDate').textContent = data.birthDate || 'No especificado';
-        document.getElementById('bloodType').textContent = data.bloodType || 'No especificado';
-        document.getElementById('allergies').textContent = data.allergies || 'Ninguna';
+        const nameEl = document.querySelector('.info-item:nth-child(1) .value');
+        const birthEl = document.querySelector('.info-item:nth-child(2) .value');
+        const bloodEl = document.querySelector('.info-item:nth-child(3) .value');
+        const allergiesEl = document.querySelector('.info-item:nth-child(4) .value');
+        
+        nameEl.textContent = data.name || 'No registrado';
+        birthEl.textContent = data.birthDate || 'No especificado';
+        bloodEl.textContent = data.bloodType || 'No especificado';
+        allergiesEl.textContent = data.allergies || 'Ninguna';
+        
         // Contactos
-        const contactsContainer = document.getElementById('contactsList');
+        const contactsContainer = document.querySelector('.contacts-section');
+        const contactsList = document.querySelector('.contacts-list');
+        
         if (Array.isArray(data.contacts) && data.contacts.length > 0) {
+          // Limpiar el mensaje por defecto
+          contactsList.innerHTML = '';
+          
           data.contacts.forEach(c => {
             const div = document.createElement('div');
+            div.className = 'info-item';
             const nameSpan = document.createElement('span');
             nameSpan.textContent = c.name;
+            nameSpan.className = 'label';
             const phoneSpan = document.createElement('span');
             phoneSpan.textContent = c.phone;
+            phoneSpan.className = 'value';
             div.appendChild(nameSpan);
             div.appendChild(phoneSpan);
-            contactsContainer.appendChild(div);
+            contactsList.appendChild(div);
           });
-        } else {
-          contactsContainer.textContent = 'No hay contactos familiares';
         }
       } catch (e) {
         console.error('Error al parsear datos:', e);
