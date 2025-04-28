@@ -12,113 +12,108 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
+      padding: 20px 0;
     }
     .card {
-      width: 360px;
+      width: 90%;
+      max-width: 360px;
       background: white;
-      border-radius: 20px;
+      border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
     }
     .card-header {
-      background: linear-gradient(90deg, #5f27cd, #4a76fd);
-      height: 100px;
+      background: linear-gradient(90deg, #6a11cb, #2575fc);
+      height: 60px;
     }
     .card-body {
-      padding: 0 20px 20px;
-      position: relative;
+      padding: 24px;
     }
     .profile {
       position: relative;
-      margin-top: -50px;
+      margin-top: -40px;
       text-align: center;
+      margin-bottom: 24px;
     }
-    .avatar-container {
-      width: 100px;
-      height: 100px;
+    .img-container {
+      width: 120px;
+      height: 120px;
       margin: 0 auto;
       border-radius: 50%;
-      background-color: #f5f5f5;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       border: 5px solid white;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    .avatar-icon {
-      width: 60px;
-      height: 60px;
-      background-color: #4a76fd;
-      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      background: #e0e0e0;
       display: flex;
       justify-content: center;
       align-items: center;
-      color: white;
+      position: relative;
     }
-    .avatar-icon::before {
+    .img-container::before {
       content: '';
-      width: 25px;
-      height: 25px;
-      background-color: white;
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
       border-radius: 50%;
-      position: absolute;
-      top: 28px;
+      background: linear-gradient(45deg, transparent, rgba(106, 17, 203, 0.1), rgba(37, 117, 252, 0.2));
+      z-index: -1;
     }
-    .avatar-icon::after {
-      content: '';
-      width: 35px;
-      height: 15px;
-      background-color: white;
-      border-radius: 20px 20px 0 0;
-      position: absolute;
-      top: 56px;
+    .default-avatar {
+      width: 60%;
+      height: 60%;
+      fill: #2575fc;
     }
     .info-list {
-      margin-top: 30px;
+      margin-top: 16px;
+      padding: 0 8px;
     }
-    .info-item {
+    .info-list div {
       display: flex;
       justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid #f0f0f0;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
     }
-    .label {
+    .info-list div:last-child {
+      border-bottom: none;
+    }
+    .info-list .label {
       color: #555;
-      font-size: 16px;
+      font-size: 14px;
     }
-    .value {
-      color: #333;
-      font-size: 16px;
-      font-weight: 500;
-    }
-    .loading {
-      background-color: #f0f0f0;
-      color: transparent;
-      border-radius: 4px;
-      animation: loading 1.5s infinite;
-      min-width: 100px;
-    }
-    .contacts-section {
-      margin-top: 20px;
-      background-color: #f9f9f9;
-      border-radius: 12px;
-      padding: 15px;
-    }
-    .contacts-title {
-      font-size: 18px;
+    .info-list .value {
       font-weight: bold;
       color: #333;
-      margin-bottom: 10px;
+      font-size: 14px;
+      max-width: 60%;
+      text-align: right;
+      word-break: break-word;
     }
-    .contacts-loading {
-      color: #777;
-      font-size: 15px;
+    .contacts {
+      margin-top: 24px;
+      padding: 8px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
     }
-    @keyframes loading {
-      0% { opacity: 0.6; }
-      50% { opacity: 1; }
-      100% { opacity: 0.6; }
+    .contacts-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .contacts-list div {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 14px;
+      border-bottom: 1px dashed #ddd;
+    }
+    .contacts-list div:last-child {
+      border-bottom: none;
     }
   </style>
 </head>
@@ -127,86 +122,125 @@
     <div class="card-header"></div>
     <div class="card-body">
       <div class="profile">
-        <div class="avatar-container">
-          <div class="avatar-icon"></div>
+        <div class="img-container" id="profileImage">
+          <!-- Avatar por defecto -->
+          <svg class="default-avatar" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+          </svg>
         </div>
       </div>
-      
       <div class="info-list">
-        <div class="info-item">
-          <span class="label">Nombre:</span>
-          <span class="value"></span>
-        </div>
-        <div class="info-item">
-          <span class="label">Nacimiento:</span>
-          <span class="value"></span>
-        </div>
-        <div class="info-item">
-          <span class="label">Grupo Sanguíneo:</span>
-          <span class="value"></span>
-        </div>
-        <div class="info-item">
-          <span class="label">Alergias:</span>
-          <span class="value"></span>
-        </div>
+        <div><span class="label">Nombre:</span><span id="name" class="value">--</span></div>
+        <div><span class="label">Nacimiento:</span><span id="birthDate" class="value">--</span></div>
+        <div><span class="label">Grupo Sanguíneo:</span><span id="bloodType" class="value">--</span></div>
+        <div><span class="label">Alergias:</span><span id="allergies" class="value">--</span></div>
       </div>
-      
-      <div class="contacts-section">
+      <div class="contacts">
         <div class="contacts-title">Contactos Familiares</div>
-        <div class="contacts-list">No hay contactos familiares</div>
+        <div class="contacts-list" id="contactsList">
+          <div>No hay contactos registrados</div>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
-    function getQueryParam(name) {
+    // Extrae parámetros de URL
+    function getParam(name) {
       const url = new URL(window.location.href);
       return url.searchParams.get(name);
     }
 
-    function init() {
-      const dataParam = getQueryParam('data');
-      if (!dataParam) return;
+    // Función principal
+    (function() {
+      // Mostrar siempre el avatar predeterminado primero
+      const profileImage = document.getElementById('profileImage');
+      
+      // Obtener datos
+      const dataParam = getParam('data');
+      const nameParam = getParam('name');
+      
+      // Caso más simple: solo hay nombre en URL
+      if (!dataParam && nameParam) {
+        document.getElementById('name').textContent = nameParam;
+        return;
+      }
+      
+      // Sin datos
+      if (!dataParam) {
+        document.getElementById('name').textContent = 'Sin datos';
+        return;
+      }
+      
       try {
-        const data = JSON.parse(decodeURIComponent(dataParam));
-        // Campos
-        const nameEl = document.querySelector('.info-item:nth-child(1) .value');
-        const birthEl = document.querySelector('.info-item:nth-child(2) .value');
-        const bloodEl = document.querySelector('.info-item:nth-child(3) .value');
-        const allergiesEl = document.querySelector('.info-item:nth-child(4) .value');
+        // Decodificar y parsear datos
+        const jsonData = decodeURIComponent(dataParam);
+        const data = JSON.parse(jsonData);
         
-        nameEl.textContent = data.name || 'No registrado';
-        birthEl.textContent = data.birthDate || 'No especificado';
-        bloodEl.textContent = data.bloodType || 'No especificado';
-        allergiesEl.textContent = data.allergies || 'Ninguna';
+        // Actualizar información básica
+        document.getElementById('name').textContent = data.name || 'No registrado';
+        document.getElementById('birthDate').textContent = data.birthDate || 'No especificado';
+        document.getElementById('bloodType').textContent = data.bloodType || 'No especificado';
+        document.getElementById('allergies').textContent = data.allergies || 'Ninguna';
         
-        // Contactos
-        const contactsContainer = document.querySelector('.contacts-section');
-        const contactsList = document.querySelector('.contacts-list');
-        
+        // Actualizar contactos
         if (Array.isArray(data.contacts) && data.contacts.length > 0) {
-          // Limpiar el mensaje por defecto
-          contactsList.innerHTML = '';
+          const contactsHTML = data.contacts.map(c => {
+            if (c && c.name && c.phone) {
+              return `<div><span>${c.name}</span><span>${c.phone}</span></div>`;
+            }
+            return '';
+          }).join('');
           
-          data.contacts.forEach(c => {
-            const div = document.createElement('div');
-            div.className = 'info-item';
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = c.name;
-            nameSpan.className = 'label';
-            const phoneSpan = document.createElement('span');
-            phoneSpan.textContent = c.phone;
-            phoneSpan.className = 'value';
-            div.appendChild(nameSpan);
-            div.appendChild(phoneSpan);
-            contactsList.appendChild(div);
-          });
+          if (contactsHTML) {
+            document.getElementById('contactsList').innerHTML = contactsHTML;
+          }
+        }
+        
+        // Intentar cargar imagen si existe
+        if (data.userImage && data.userImage.length > 0) {
+          try {
+            // Crear imagen
+            const img = new Image();
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            
+            // Determinar formato
+            let format = 'jpeg';
+            if (data.userImage.startsWith('iVBOR')) {
+              format = 'png';
+            }
+            
+            // Configurar fuente
+            img.src = `data:image/${format};base64,${data.userImage}`;
+            
+            // Manejar error
+            img.onerror = function() {
+              // Si falla con el primer formato, intentar con el otro
+              format = (format === 'jpeg') ? 'png' : 'jpeg';
+              img.src = `data:image/${format};base64,${data.userImage}`;
+              
+              // Si falla de nuevo, no hacer nada (ya está el avatar por defecto)
+              img.onerror = null;
+            };
+            
+            // Si la imagen carga correctamente, reemplazar el avatar
+            img.onload = function() {
+              // Limpiar contenido actual
+              profileImage.innerHTML = '';
+              // Agregar la imagen
+              profileImage.appendChild(img);
+            };
+          } catch (e) {
+            console.error('Error al procesar imagen:', e);
+          }
         }
       } catch (e) {
         console.error('Error al parsear datos:', e);
+        document.getElementById('name').textContent = 'Error en datos';
       }
-    }
-    window.onload = init;
+    })();
   </script>
 </body>
 </html> 
