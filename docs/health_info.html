@@ -171,10 +171,15 @@
   </div>
 
   <script>
-    // Activar depuración con doble tap en cualquier parte
+    // Mostrar panel de depuración por defecto
+    window.addEventListener('load', function() {
+      document.getElementById('debugInfo').style.display = 'block';
+    });
+    
+    // Activar/desactivar panel de depuración con doble tap en cualquier parte
     document.addEventListener('dblclick', function() {
       const debugEl = document.getElementById('debugInfo');
-      debugEl.style.display = debugEl.style.display === 'none' || debugEl.style.display === '' ? 'block' : 'none';
+      debugEl.style.display = debugEl.style.display === 'none' ? 'block' : 'none';
     });
 
     function getQueryParam(name) {
@@ -182,76 +187,108 @@
       return url.searchParams.get(name);
     }
 
+    // Función para crear elemento de imagen desde base64
+    function createImageElement(base64String) {
+      // Crear elemento de imagen manual
+      const imgEl = document.getElementById('userImage');
+      const noImgEl = document.getElementById('noImage');
+      const debugEl = document.getElementById('debugInfo');
+      
+      debugEl.innerHTML = 'Creando imagen...<br>';
+      
+      try {
+        // Mostrar información básica
+        debugEl.innerHTML += `Longitud de datos: ${base64String.length} caracteres<br>`;
+        
+        // Determinar el tipo de imagen basado en los primeros caracteres
+        let imageType = 'jpeg'; // Por defecto
+        if (base64String.startsWith('/9j/')) {
+          imageType = 'jpeg';
+          debugEl.innerHTML += 'Detectado formato: JPEG<br>';
+        } else if (base64String.startsWith('iVBOR')) {
+          imageType = 'png';
+          debugEl.innerHTML += 'Detectado formato: PNG<br>';
+        } else {
+          debugEl.innerHTML += 'Formato no reconocido, probando como JPEG<br>';
+        }
+        
+        // Construir el src de la imagen
+        imgEl.src = `data:image/${imageType};base64,${base64String}`;
+        
+        // Mostrar la imagen y ocultar el avatar
+        imgEl.style.display = 'block';
+        noImgEl.style.display = 'none';
+        
+        // Añadir manejo de errores
+        imgEl.onerror = function() {
+          debugEl.innerHTML += 'Error al cargar como ' + imageType + ', intentando formato alternativo<br>';
+          
+          // Intentar con el formato alternativo
+          const altFormat = imageType === 'jpeg' ? 'png' : 'jpeg';
+          imgEl.src = `data:image/${altFormat};base64,${base64String}`;
+          
+          // Si sigue fallando, usar imagen de prueba
+          imgEl.onerror = function() {
+            debugEl.innerHTML += 'Error con ambos formatos, usando imagen genérica<br>';
+            
+            // Usar imagen de avatar generada (1x1 pixel transparente escalado)
+            imgEl.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+            
+            // Si incluso eso falla, mostrar avatar predeterminado
+            imgEl.onerror = function() {
+              debugEl.innerHTML += 'Error con imagen genérica, mostrando avatar<br>';
+              imgEl.style.display = 'none';
+              noImgEl.style.display = 'flex';
+            };
+          };
+        };
+        
+        // Confirmar carga exitosa
+        imgEl.onload = function() {
+          debugEl.innerHTML += '¡Imagen cargada con éxito!<br>';
+        };
+        
+      } catch (e) {
+        debugEl.innerHTML += 'Error procesando imagen: ' + e.message + '<br>';
+        imgEl.style.display = 'none';
+        noImgEl.style.display = 'flex';
+      }
+    }
+
     function init() {
       const dataParam = getQueryParam('data');
+      const debugEl = document.getElementById('debugInfo');
+      
+      debugEl.innerHTML = 'Iniciando procesamiento...<br>';
+      
       if (!dataParam) {
         document.getElementById('name').textContent = 'Sin datos';
         document.getElementById('birthDate').textContent = 'Sin datos';
         document.getElementById('bloodType').textContent = 'Sin datos';
         document.getElementById('allergies').textContent = 'Sin datos';
         document.getElementById('contactsList').textContent = 'Sin datos de contactos';
+        debugEl.innerHTML += 'No se encontraron datos en la URL<br>';
         return;
       }
       
+      debugEl.innerHTML += 'Datos encontrados en URL, decodificando...<br>';
+      
       try {
-        const data = JSON.parse(decodeURIComponent(dataParam));
+        const jsonData = decodeURIComponent(dataParam);
+        debugEl.innerHTML += `Longitud de JSON: ${jsonData.length} caracteres<br>`;
         
-        // Manejar la imagen con mejor soporte para diferentes formatos
-        const imgEl = document.getElementById('userImage');
-        const noImgEl = document.getElementById('noImage');
-        const debugEl = document.getElementById('debugInfo');
+        const data = JSON.parse(jsonData);
+        debugEl.innerHTML += 'JSON parseado correctamente<br>';
         
-        // Información de depuración
-        debugEl.innerHTML = 'Procesando datos...<br>';
-        
+        // Procesar imagen si existe
         if (data.userImage && data.userImage.length > 0) {
-          // Asegurarse de que la imagen esté visible
-          imgEl.style.display = 'block';
-          noImgEl.style.display = 'none';
-          
-          // Información para depuración
-          debugEl.innerHTML += `Imagen encontrada: ${data.userImage.length} caracteres<br>`;
-          debugEl.innerHTML += `Primeros caracteres: ${data.userImage.substring(0, 20)}...<br>`;
-          
-          // Intentar cargar la imagen como JPEG primero
-          imgEl.src = 'data:image/jpeg;base64,' + data.userImage;
-          debugEl.innerHTML += 'Intentando como JPEG...<br>';
-          
-          imgEl.onerror = function() {
-            debugEl.innerHTML += 'Error con JPEG, intentando PNG...<br>';
-            // Si falla, probar como PNG
-            imgEl.src = 'data:image/png;base64,' + data.userImage;
-            
-            // Si sigue fallando, intentar sin especificar formato
-            imgEl.onerror = function() {
-              debugEl.innerHTML += 'Error con PNG, intentando formato genérico...<br>';
-              imgEl.src = 'data:image;base64,' + data.userImage;
-              
-              // Último intento: mostrar avatar por defecto
-              imgEl.onerror = function() {
-                debugEl.innerHTML += 'Error con todos los formatos. Mostrando avatar.<br>';
-                imgEl.style.display = 'none';
-                noImgEl.style.display = 'flex';
-              };
-            };
-          };
-          
-          imgEl.onload = function() {
-            debugEl.innerHTML += '¡Imagen cargada con éxito!<br>';
-          };
+          debugEl.innerHTML += `Imagen encontrada (${data.userImage.length} caracteres)<br>`;
+          createImageElement(data.userImage);
         } else {
-          // Mostrar avatar por defecto si no hay imagen
-          imgEl.style.display = 'none';
-          noImgEl.style.display = 'flex';
           debugEl.innerHTML += 'No se encontró imagen en los datos<br>';
+          document.getElementById('userImage').style.display = 'none';
+          document.getElementById('noImage').style.display = 'flex';
         }
-        
-        // Registrar en consola para debugging
-        console.log('Estado de imagen:', {
-          tieneImagen: !!data.userImage,
-          longitudBase64: data.userImage ? data.userImage.length : 0,
-          primeros10Chars: data.userImage ? data.userImage.substring(0, 10) : 'N/A'
-        });
         
         // Actualizar información personal
         document.getElementById('name').textContent = data.name || 'No registrado';
@@ -288,8 +325,8 @@
         console.error('Error al parsear datos:', e);
         document.getElementById('name').textContent = 'Error en datos';
         document.getElementById('contactsList').textContent = 'Error al procesar contactos';
-        document.getElementById('debugInfo').innerHTML = 'Error: ' + e.message;
-        document.getElementById('debugInfo').style.display = 'block';
+        debugEl.innerHTML += 'Error: ' + e.message + '<br>';
+        debugEl.style.display = 'block'; // Asegurar que se muestre el error
       }
     }
     
