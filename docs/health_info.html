@@ -102,19 +102,54 @@
       text-align: center;
       padding: 20px;
     }
+    @media print {
+      body {
+        background-color: white;
+      }
+      .card {
+        box-shadow: none;
+        margin: 0;
+        width: 100%;
+      }
+      .print-button {
+        display: none;
+      }
+    }
+    .print-button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .print-button:hover {
+      background-color: #3367d6;
+    }
+    .update-time {
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="card" id="info-card">
     <div class="header"></div>
     <div class="profile">
-      <div class="avatar">
-        <span class="avatar-icon">👤</span>
+      <div class="avatar" id="avatar-container">
+        <span class="avatar-icon" id="default-avatar">👤</span>
       </div>
     </div>
     <div class="info" id="info-container">
       <div class="loading" id="loading">Cargando información...</div>
     </div>
+    <button class="print-button" onclick="window.print()">Imprimir Información</button>
+    <div class="update-time" id="update-time"></div>
   </div>
 
   <script>
@@ -128,25 +163,85 @@
       return decodeURIComponent(results[2].replace(/\+/g, ' '));
     }
 
+    function addInfoItem(container, label, value) {
+      const row = document.createElement('div');
+      row.className = 'info-row';
+      
+      const labelElement = document.createElement('div');
+      labelElement.className = 'info-label';
+      labelElement.textContent = label;
+      
+      const valueElement = document.createElement('div');
+      valueElement.className = 'info-value';
+      valueElement.textContent = value;
+      
+      row.appendChild(labelElement);
+      row.appendChild(valueElement);
+      container.appendChild(row);
+    }
+
+    function addContactItem(container, name, phone) {
+      const item = document.createElement('div');
+      item.className = 'contact-item';
+      
+      const icon = document.createElement('span');
+      icon.className = 'contact-icon';
+      icon.textContent = '📞';
+      
+      const info = document.createElement('div');
+      info.textContent = `${name}: ${phone}`;
+      
+      item.appendChild(icon);
+      item.appendChild(info);
+      container.appendChild(item);
+    }
+
+    // Función para actualizar la imagen del perfil
+    function updateProfileImage(imageUrl) {
+      const avatarContainer = document.getElementById('avatar-container');
+      const defaultAvatar = document.getElementById('default-avatar');
+      
+      if (imageUrl) {
+        // Crear elemento de imagen
+        const img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = 'Foto de perfil';
+        img.onerror = function() {
+          // Si hay error al cargar la imagen, mostrar avatar por defecto
+          defaultAvatar.style.display = 'block';
+        };
+        
+        // Ocultar avatar por defecto y añadir imagen
+        defaultAvatar.style.display = 'none';
+        avatarContainer.appendChild(img);
+      } else {
+        // Asegurar que se muestra el avatar por defecto
+        defaultAvatar.style.display = 'block';
+      }
+    }
+
     // Función para procesar y mostrar datos de emergencia
-    function processEmergencyData() {
+    async function processEmergencyData() {
       const container = document.getElementById('info-container');
       const loading = document.getElementById('loading');
+      const updateTimeElement = document.getElementById('update-time');
 
       try {
         // Obtener datos JSON del parámetro 'data'
         const dataParam = getUrlParameter('data');
-        console.log("Data param:", dataParam);
-        
         if (!dataParam) {
           throw new Error('No se encontraron datos en la URL');
         }
 
         const data = JSON.parse(dataParam);
-        console.log("Parsed data:", data);
-
+        
         // Limpiar contenedor
         container.innerHTML = '';
+
+        // Actualizar imagen de perfil si existe
+        if (data.imageUrl) {
+          updateProfileImage(data.imageUrl);
+        }
 
         // Información personal
         addInfoItem(container, 'Nombre:', data.name || '--');
@@ -161,63 +256,32 @@
           sectionTitle.textContent = 'Contactos Familiares';
           container.appendChild(sectionTitle);
 
-          const contactsContainer = document.createElement('div');
           data.contacts.forEach(contact => {
             if (contact.name && contact.phone) {
-              const contactItem = document.createElement('div');
-              contactItem.className = 'contact-item';
-              contactItem.innerHTML = `
-                <div class="contact-icon">📞</div>
-                <div>
-                  <div class="info-value">${contact.name}</div>
-                  <div class="info-label">${contact.phone}</div>
-                </div>
-              `;
-              contactsContainer.appendChild(contactItem);
+              addContactItem(container, contact.name, contact.phone);
             }
           });
-
-          if (contactsContainer.children.length === 0) {
-            const noContacts = document.createElement('div');
-            noContacts.textContent = 'No hay contactos registrados';
-            contactsContainer.appendChild(noContacts);
-          }
-
-          container.appendChild(contactsContainer);
-        } else {
-          addInfoItem(container, 'Contactos:', 'No hay contactos registrados');
         }
 
-        // Si hay imagen, mostrarla
-        if (data.imageUrl) {
-          const avatar = document.querySelector('.avatar');
-          avatar.innerHTML = `<img src="${data.imageUrl}" alt="Foto del usuario">`;
-        }
+        // Actualizar timestamp
+        const now = new Date();
+        updateTimeElement.textContent = `Última actualización: ${now.toLocaleString()}`;
 
       } catch (error) {
-        console.error('Error al procesar datos:', error);
         container.innerHTML = `
           <div class="error-message">
-            <p>Error al cargar la información.</p>
-            <p>${error.message}</p>
+            <p>Error al cargar la información: ${error.message}</p>
+            <p>Por favor, escanea el código QR nuevamente.</p>
           </div>
         `;
       }
     }
 
-    // Función auxiliar para añadir información
-    function addInfoItem(container, label, value) {
-      const row = document.createElement('div');
-      row.className = 'info-row';
-      row.innerHTML = `
-        <div class="info-label">${label}</div>
-        <div class="info-value">${value}</div>
-      `;
-      container.appendChild(row);
-    }
-
-    // Iniciar cuando el documento esté listo
+    // Procesar datos al cargar la página
     document.addEventListener('DOMContentLoaded', processEmergencyData);
+
+    // Actualizar datos cada 5 minutos si la página está activa
+    setInterval(processEmergencyData, 5 * 60 * 1000);
   </script>
 </body>
-</html> 
+</html>
