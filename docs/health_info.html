@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Información Médica de Emergencia</title>
   <style>
     body {
@@ -118,6 +118,7 @@
   </div>
 
   <script>
+    // Función para obtener parámetros de URL
     function getUrlParameter(name) {
       const url = window.location.search;
       const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
@@ -127,57 +128,35 @@
       return decodeURIComponent(results[2].replace(/\+/g, ' '));
     }
 
+    // Función para procesar y mostrar datos de emergencia
     function processEmergencyData() {
       const container = document.getElementById('info-container');
       const loading = document.getElementById('loading');
 
       try {
+        // Obtener datos JSON del parámetro 'data'
         const dataParam = getUrlParameter('data');
-        if (!dataParam) throw new Error('No se encontraron datos en la URL');
+        console.log("Data param:", dataParam);
+        
+        if (!dataParam) {
+          throw new Error('No se encontraron datos en la URL');
+        }
 
         const data = JSON.parse(dataParam);
+        console.log("Parsed data:", data);
+
+        // Limpiar contenedor
         container.innerHTML = '';
 
-        // Datos básicos
+        // Información personal
         addInfoItem(container, 'Nombre:', data.name || '--');
         addInfoItem(container, 'Nacimiento:', data.birthDate || '--');
         addInfoItem(container, 'Grupo Sanguíneo:', data.bloodType || '--');
         addInfoItem(container, 'Alergias:', data.allergies || '--');
-
-        // Condiciones médicas
-        if (data.medicalConditions && data.medicalConditions.length > 0) {
-          addInfoItem(container, 'Condiciones Médicas:', data.medicalConditions.join(', '));
-        }
-
-        // Medicamentos actuales
-        if (data.medications && data.medications.length > 0) {
-          const sectionTitle = document.createElement('div');
-          sectionTitle.className = 'section-title';
-          sectionTitle.textContent = 'Medicamentos Actuales';
-          container.appendChild(sectionTitle);
-
-          data.medications.forEach(med => {
-            const medItem = document.createElement('div');
-            medItem.className = 'info-row';
-            medItem.innerHTML = `
-              <div class="info-label">Nombre:</div>
-              <div class="info-value">${med.name || '--'}</div>
-              <div class="info-label">Dosis:</div>
-              <div class="info-value">${med.dose || '--'}</div>
-              <div class="info-label">Horario:</div>
-              <div class="info-value">${med.schedule || '--'}</div>
-              <div class="divider"></div>
-            `;
-            container.appendChild(medItem);
-          });
-        }
-
-        // Notas médicas
-        if (data.medicalNotes) {
-          addInfoItem(container, 'Notas Médicas:', data.medicalNotes);
-        }
-
-        // Contactos
+        addInfoItem(container, 'condicion:', data.medicalConditions || '--')
+        addInfoItem(container, 'Medicamentos:', data.medications || '--');
+        addInfoItem(container, 'Notas:', data.medicalNotes || '--');
+        // Contactos familiares
         if (data.contacts && data.contacts.length > 0) {
           const sectionTitle = document.createElement('div');
           sectionTitle.className = 'section-title';
@@ -211,10 +190,10 @@
           addInfoItem(container, 'Contactos:', 'No hay contactos registrados');
         }
 
-        // Imagen de perfil
-        if (data.userImage) {
+        // Si hay imagen, mostrarla
+        if (data.imageUrl) {
           const avatar = document.querySelector('.avatar');
-          avatar.innerHTML = `<img src="${data.userImage}" alt="Foto del usuario">`;
+          avatar.innerHTML = `<img src="${data.imageUrl}" alt="Foto del usuario">`;
         }
 
       } catch (error) {
@@ -228,6 +207,7 @@
       }
     }
 
+    // Función auxiliar para añadir información
     function addInfoItem(container, label, value) {
       const row = document.createElement('div');
       row.className = 'info-row';
@@ -238,7 +218,8 @@
       container.appendChild(row);
     }
 
+    // Iniciar cuando el documento esté listo
     document.addEventListener('DOMContentLoaded', processEmergencyData);
   </script>
 </body>
-</html>
+</html> 
